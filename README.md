@@ -61,3 +61,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 - Java: 17
 - SpringBoot: v3.2.3
+
+![Architecure](assets/Messaging-AWS.drawio.png)
+
