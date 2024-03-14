@@ -1,4 +1,4 @@
-# Java Banking Project
+# AWS Java Banking Project
 
 This is a Java banking project developed to allow the creation of accounts, deposits, withdrawals, and balance checks in a simple and efficient manner.
 
