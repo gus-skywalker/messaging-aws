@@ -1,0 +1,9 @@
+spring.application.name=messaging
+spring.config.import=optional:configserver:
+spring.main.web-application-type=reactive
+#spring.cloud.config.enabled=false
+#spring.cloud.config.import-check.enabled=false
+aws.accessKeyId=
+aws.secretKeyId=
+aws.region=
+aws.sns.topic.accounts.arn=arn:aws:sns:{region}:{aws_id}:accounts-emit
