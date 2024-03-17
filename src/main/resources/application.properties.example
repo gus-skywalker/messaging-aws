@@ -1,8 +1,10 @@
 spring.application.name=messaging
 spring.config.import=optional:configserver:
 spring.main.web-application-type=reactive
+spring.data.mongodb.uri: mongodb://${PROD_DB_USERNAME}:${PROD_DB_PASSWORD}@{domain.com}:${PROD_DB_PORT}/${PROD_DB_NAME}?authMechanism=SCRAM-SHA-1
 #spring.cloud.config.enabled=false
 #spring.cloud.config.import-check.enabled=false
+
 aws.accessKeyId=
 aws.secretKeyId=
 aws.region=
