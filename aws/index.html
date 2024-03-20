@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>My AWS Bank Lambda</title>
+    <style type="text/css">
+      @font-face {
+        font-family: "sans-serif";
+      }
+      body {
+        margin: 0;
+        font-family: "Amazon Ember", Helvetica, Arial, sans-serif;
+      }
+      h1 {
+        background-color: #232f3e;
+        color: white;
+        font-size: 3rem;
+        font-weight: 300;
+        margin: 0;
+        padding: 1rem;
+        text-align: center;
+      }
+      h2, h3 {
+        font-weight: normal;
+        margin-top: 0;
+      }
+      h3 {
+        margin-top: 1rem;
+        margin-left: 1rem;
+      }
+      p {
+        margin-top: 0;
+      }
+      #intro {
+        background-color: #232f3e;
+        color: white;
+          text-align: center;
+      }
+      #instructions {
+        background-color: #d5dbdb;
+        margin-bottom: 2rem;
+        padding: 2rem;
+      }
+      .hide {
+        display: none;
+      }
+      .section {
+        padding: 2rem;
+        padding-top: 0;
+      }
+      .section > div {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+      }
+      .section > div > div {
+        flex-grow: 1;
+      }
+      .card {
+        border-top: 1px solid #eaeded;
+        box-shadow: 0 1px 1px 0 rgba(0,28,36,.3), 1px 1px 1px 0 rgba(0,28,36,.15), -1px 1px 1px 0 rgba(0,28,36,.15);
+        padding: 1rem;
+      }
+      a {
+        color: #0073bb;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      input[type="text"] {
+        font-family: "Amazon Ember", Helvetica, Arial, sans-serif;
+        flex-grow: 1;
+        border: 1px solid #aab7b8;
+        border-radius: 2px;
+        color: #16191f;
+      }
+      input[type="text"]:focus {
+        border: 1px solid #00a1c9;
+        box-shadow: 0 0 0 1px #00a1c9;
+        outline: 2px dotted transparent;
+      }
+      form {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        padding-right: 3rem;
+      }
+      input[type="submit"] {
+        background-color: white;
+        border: 1px solid #545b64;
+        border-radius: 2px;
+        color: #545b64;
+        cursor: pointer;
+        font-weight: 700;
+        padding: .4rem 2rem;
+      }
+      input[type="submit"]:hover {
+        background-color: #f2f3f3;
+        border: 1px solid #16191f;
+        color: #16191f;
+      }
+
+      @media only screen and (max-width: 800px) {
+        .section > div {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>My AWS Bank Lambda</h1>
+    <div id="intro" class="section">
+    </div>
+    <div id="instructions" class="section">
+      <p>Create Your Bank Account and Make Your First Deposit</p>
+      <h2>Register</h2>
+      <form id="registerForm" action="/" method="POST">
+        <label for="name">Nome:</label>
+        <input type="text" id="name" placeholder="name" name="name" required><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" placeholder="email" name="email" required><br><br>
+        <label for="phone">Telefone:</label>
+        <input type="tel" id="phone" placeholder="phone number" name="phone" required><br><br>
+        <input type="submit" value="Register">
+      </form>
+    </div>
+    <div id="registrationResult" class="result hide"></div>
+    <div class="section">
+      <h2>Make Deposit</h2>
+      <form id="depositForm">
+        <label for="depositAccountNumber">Account Number:</label>
+        <input type="text" id="depositAccountNumber" name="accountNumber" required><br><br>
+        <label for="depositAmount">Amount:</label>
+        <input type="number" id="depositAmount" name="amount" required><br><br>
+        <input type="submit" value="Deposit">
+      </form>
+    </div>
+    <div class="section">
+      <h2>Make Withdrawal</h2>
+      <form id="withdrawForm">
+        <label for="withdrawAccountNumber">Account Number:</label>
+        <input type="text" id="withdrawAccountNumber" name="accountNumber" required><br><br>
+        <label for="withdrawAmount">Amount:</label>
+        <input type="number" id="withdrawAmount" name="amount" required><br><br>
+        <input type="submit" value="Withdraw">
+      </form>
+    </div>
+    <div class="section">
+      <h2>Check Balance</h2>
+      <form id="balanceForm">
+        <label for="balanceAccountNumber">Account Number:</label>
+        <input type="text" id="balanceAccountNumber" name="accountNumber" required><br><br>
+        <input type="button" id="checkBalanceBtn" value="Check Balance">
+        <span id="balanceResult"></span>
+      </form>
+    </div>
+    <script>
+      async function callAPI(url, method, data) {
+        let apiUrl = `https://aws-messaging-prod-production.up.railway.app/api/accounts/${url}?`;
+        // Construct query parameters
+        Object.keys(data).forEach(key => {
+            apiUrl += `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}&`;
+        });
+
+        // Remove trailing '&' if exists
+        apiUrl = apiUrl.slice(0, -1);
+        
+        const response = await fetch(apiUrl, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        return response.json();
+      }
+      
+      document.getElementById('registerForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      
+      const response = await callAPI('create-account', 'POST', { customerName: name, customerEmail: email, customerPhone: phone });
+      if(response) {
+        console.log(response);  
+        alert(`\nRegistration successful!\nYour account number is: ${response.number}`);
+      }
+      document.getElementById('registrationResult').innerText = `Registration successful! Your account number is: ${response.number}`;
+      document.getElementById('registrationResult').classList.remove('hide');
+      // You might want to handle the response according to your requirements
+      });
+  
+      document.getElementById('depositForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const accountNumber = document.getElementById('depositAccountNumber').value;
+        const amount = document.getElementById('depositAmount').value;
+        const response = await callAPI('deposit', 'POST', { accountNumber: accountNumber, amount: amount });
+        console.log(response);
+        alert('Deposit successful!');
+        // You might want to handle the response according to your requirements
+      });
+  
+      document.getElementById('withdrawForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const accountNumber = document.getElementById('withdrawAccountNumber').value;
+        const amount = document.getElementById('withdrawAmount').value;
+        const response = await callAPI('withdraw', 'POST', { accountNumber: accountNumber, amount: amount });
+        console.log(response);
+        alert('Withdrawal successful!');
+        // You might want to handle the response according to your requirements
+      });
+  
+      document.getElementById('checkBalanceBtn').addEventListener('click', async () => {
+        const accountNumber = document.getElementById('balanceAccountNumber').value;
+        const response = await callAPI(`balance`, 'GET', { accountNumber: accountNumber });
+        console.log(response);
+        document.getElementById('balanceResult').innerText = `Balance: ${response}`;
+      });
+    </script>
+  </body>
+</html>
